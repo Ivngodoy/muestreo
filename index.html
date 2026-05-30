@@ -1,0 +1,1477 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Muestreo Estadístico - Interactive Learning</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+:root {
+  --bg: #f8fafc; --bg2: #ffffff; --bg3: #f1f5f9; --text: #0f172a; --text2: #475569;
+  --text3: #94a3b8; --border: #e2e8f0; --accent: #6366f1; --accent2: #8b5cf6;
+  --accent3: #a78bfa; --success: #10b981; --warning: #f59e0b; --danger: #ef4444;
+  --info: #3b82f6; --shadow: 0 1px 3px rgba(0,0,0,0.08); --shadow-lg: 0 10px 40px rgba(0,0,0,0.1);
+  --radius: 12px; --radius-sm: 8px; --transition: 0.25s cubic-bezier(0.4,0,0.2,1);
+  --sidebar-w: 280px; --topbar-h: 60px;
+  --c1: #6366f1; --c2: #8b5cf6; --c3: #ec4899; --c4: #f43f5e; --c5: #f97316; --c6: #eab308; --c7: #22c55e;
+}
+.dark {
+  --bg: #0f172a; --bg2: #1e293b; --bg3: #334155; --text: #f1f5f9; --text2: #cbd5e1;
+  --text3: #64748b; --border: #334155; --shadow: 0 1px 3px rgba(0,0,0,0.3); --shadow-lg: 0 10px 40px rgba(0,0,0,0.4);
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family:'Inter',sans-serif; background:var(--bg); color:var(--text); line-height:1.6; overflow-x:hidden; }
+::-webkit-scrollbar { width:6px; } ::-webkit-scrollbar-track { background:transparent; }
+::-webkit-scrollbar-thumb { background:var(--text3); border-radius:3px; }
+
+/* Topbar */
+.topbar { position:fixed; top:0; left:0; right:0; height:var(--topbar-h); background:var(--bg2); border-bottom:1px solid var(--border); display:flex; align-items:center; padding:0 20px; z-index:100; gap:12px; }
+.topbar .logo { font-size:1.25rem; font-weight:800; background:linear-gradient(135deg,var(--accent),var(--accent2)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; white-space:nowrap; }
+.topbar .search-wrap { flex:1; max-width:500px; position:relative; }
+.topbar .search-wrap input { width:100%; padding:10px 16px 10px 42px; border:2px solid var(--border); border-radius:24px; background:var(--bg3); color:var(--text); font-size:0.9rem; outline:none; transition:var(--transition); }
+.topbar .search-wrap input:focus { border-color:var(--accent); }
+.topbar .search-wrap i { position:absolute; left:16px; top:50%; transform:translateY(-50%); color:var(--text3); }
+.topbar .top-actions { display:flex; gap:8px; align-items:center; }
+.topbar .top-actions button { width:40px; height:40px; border-radius:50%; border:none; background:var(--bg3); color:var(--text); cursor:pointer; font-size:1.1rem; transition:var(--transition); display:flex; align-items:center; justify-content:center; }
+.topbar .top-actions button:hover { background:var(--accent); color:#fff; }
+.menu-toggle { display:none; }
+
+/* Sidebar */
+.sidebar { position:fixed; top:var(--topbar-h); left:0; bottom:0; width:var(--sidebar-w); background:var(--bg2); border-right:1px solid var(--border); overflow-y:auto; z-index:90; padding:16px 0; transition:transform var(--transition); }
+.sidebar .nav-section { padding:8px 20px; font-size:0.7rem; font-weight:700; text-transform:uppercase; letter-spacing:0.08em; color:var(--text3); margin-top:8px; }
+.sidebar .nav-item { display:flex; align-items:center; gap:12px; padding:12px 20px; cursor:pointer; transition:var(--transition); border-left:3px solid transparent; color:var(--text2); font-size:0.9rem; font-weight:500; }
+.sidebar .nav-item:hover { background:var(--bg3); color:var(--text); }
+.sidebar .nav-item.active { background:var(--bg3); border-left-color:var(--accent); color:var(--accent); font-weight:600; }
+.sidebar .nav-item .dot { width:8px; height:8px; border-radius:50%; flex-shrink:0; }
+.sidebar .nav-item .check { margin-left:auto; color:var(--success); font-size:0.8rem; opacity:0; transition:opacity var(--transition); }
+.sidebar .nav-item .check.done { opacity:1; }
+
+/* Main */
+.main { margin-left:var(--sidebar-w); margin-top:var(--topbar-h); padding:32px; min-height:calc(100vh - var(--topbar-h)); }
+.page { display:none; animation:fadeIn 0.35s ease; }
+.page.active { display:block; }
+@keyframes fadeIn { from{opacity:0;transform:translateY(12px);} to{opacity:1;transform:translateY(0);} }
+
+/* Cards */
+.card { background:var(--bg2); border:1px solid var(--border); border-radius:var(--radius); padding:24px; margin-bottom:20px; box-shadow:var(--shadow); }
+.card h3 { font-size:1.2rem; font-weight:700; margin-bottom:12px; }
+.card h4 { font-size:1rem; font-weight:600; margin-bottom:8px; color:var(--accent); }
+
+/* Mind Map */
+.mindmap-container { position:relative; width:100%; height:500px; border:1px solid var(--border); border-radius:var(--radius); overflow:hidden; background:var(--bg3); cursor:grab; }
+.mindmap-container:active { cursor:grabbing; }
+.mindmap-svg { width:100%; height:100%; }
+.mindmap-node { cursor:pointer; transition:all 0.2s; }
+.mindmap-node:hover { filter:brightness(1.2); }
+.mindmap-controls { position:absolute; bottom:12px; right:12px; display:flex; gap:6px; }
+.mindmap-controls button { width:36px; height:36px; border-radius:50%; border:none; background:var(--bg2); color:var(--text); cursor:pointer; font-size:1rem; box-shadow:var(--shadow); transition:var(--transition); }
+.mindmap-controls button:hover { background:var(--accent); color:#fff; }
+
+/* Flashcard */
+.flashcard-wrap { perspective:1000px; width:100%; max-width:500px; height:280px; margin:0 auto; }
+.flashcard { width:100%; height:100%; position:relative; transform-style:preserve-3d; transition:transform 0.6s; cursor:pointer; }
+.flashcard.flipped { transform:rotateY(180deg); }
+.flashcard-face { position:absolute; width:100%; height:100%; backface-visibility:hidden; border-radius:var(--radius); display:flex; flex-direction:column; align-items:center; justify-content:center; padding:32px; text-align:center; box-shadow:var(--shadow-lg); }
+.flashcard-front { background:linear-gradient(135deg,var(--accent),var(--accent2)); color:#fff; }
+.flashcard-back { background:linear-gradient(135deg,var(--success),#059669); color:#fff; transform:rotateY(180deg); }
+.flashcard-front h3 { font-size:1.3rem; font-weight:700; }
+.flashcard-back p { font-size:1rem; line-height:1.5; }
+.flashcard-nav { display:flex; justify-content:center; gap:12px; margin-top:16px; }
+.flashcard-nav button { padding:10px 20px; border-radius:24px; border:none; cursor:pointer; font-weight:600; font-size:0.9rem; transition:var(--transition); }
+.flashcard-nav .btn-prev, .flashcard-nav .btn-next { background:var(--bg3); color:var(--text); }
+.flashcard-nav .btn-shuffle { background:var(--accent); color:#fff; }
+.flashcard-nav button:hover { opacity:0.85; transform:translateY(-1px); }
+
+/* Quiz */
+.quiz-question { margin-bottom:20px; }
+.quiz-question p { font-weight:600; margin-bottom:10px; }
+.quiz-option { display:block; width:100%; padding:12px 16px; margin:6px 0; border:2px solid var(--border); border-radius:var(--radius-sm); background:var(--bg3); color:var(--text); cursor:pointer; text-align:left; font-size:0.9rem; transition:var(--transition); }
+.quiz-option:hover { border-color:var(--accent); }
+.quiz-option.correct { border-color:var(--success); background:rgba(16,185,129,0.1); }
+.quiz-option.wrong { border-color:var(--danger); background:rgba(239,68,68,0.1); }
+.quiz-option:disabled { cursor:default; }
+.quiz-feedback { margin-top:8px; font-size:0.85rem; padding:8px 12px; border-radius:var(--radius-sm); display:none; }
+.quiz-feedback.show { display:block; }
+.quiz-feedback.correct { background:rgba(16,185,129,0.1); color:var(--success); }
+.quiz-feedback.wrong { background:rgba(239,68,68,0.1); color:var(--danger); }
+.quiz-score { text-align:center; font-size:1.2rem; font-weight:700; margin:16px 0; }
+
+/* Code blocks */
+.code-block { position:relative; background:#1e293b; border-radius:var(--radius-sm); margin:12px 0; overflow:hidden; }
+.code-block .code-header { display:flex; justify-content:space-between; align-items:center; padding:8px 16px; background:#334155; color:#cbd5e1; font-size:0.8rem; font-weight:600; }
+.code-block .code-header .lang-tag { background:var(--accent); color:#fff; padding:2px 10px; border-radius:12px; font-size:0.7rem; }
+.code-block pre { padding:16px; margin:0; overflow-x:auto; font-family:'JetBrains Mono',monospace; font-size:0.85rem; line-height:1.6; color:#e2e8f0; }
+.code-block .copy-btn { background:transparent; border:1px solid #64748b; color:#cbd5e1; padding:4px 12px; border-radius:16px; cursor:pointer; font-size:0.75rem; transition:var(--transition); }
+.code-block .copy-btn:hover { background:#475569; }
+.code-block .copy-btn.copied { background:var(--success); border-color:var(--success); color:#fff; }
+
+/* Glossary */
+.glossary-filter { display:flex; gap:8px; margin-bottom:16px; flex-wrap:wrap; }
+.glossary-filter input { flex:1; min-width:200px; padding:10px 16px; border:2px solid var(--border); border-radius:24px; background:var(--bg3); color:var(--text); font-size:0.9rem; outline:none; }
+.glossary-filter input:focus { border-color:var(--accent); }
+.glossary-term { background:var(--bg2); border:1px solid var(--border); border-radius:var(--radius-sm); padding:16px; margin-bottom:8px; transition:var(--transition); }
+.glossary-term:hover { border-color:var(--accent); }
+.glossary-term h4 { color:var(--accent); margin-bottom:4px; }
+.glossary-term .term-topic { font-size:0.75rem; color:var(--text3); }
+
+/* Formula sheet */
+.formula-card { background:var(--bg2); border:1px solid var(--border); border-radius:var(--radius); padding:20px; margin-bottom:12px; }
+.formula-card h4 { color:var(--accent); margin-bottom:8px; }
+.formula-card .formula { padding:12px 16px; background:var(--bg3); border-radius:var(--radius-sm); overflow-x:auto; margin:8px 0; }
+
+/* Progress */
+.progress-bar { height:8px; background:var(--bg3); border-radius:4px; overflow:hidden; margin:8px 0; }
+.progress-bar .fill { height:100%; background:linear-gradient(90deg,var(--accent),var(--accent2)); border-radius:4px; transition:width 0.5s ease; }
+
+/* Tabs */
+.tabs { display:flex; gap:4px; margin-bottom:20px; flex-wrap:wrap; }
+.tab { padding:10px 20px; border-radius:24px; border:none; cursor:pointer; font-weight:600; font-size:0.85rem; background:var(--bg3); color:var(--text2); transition:var(--transition); }
+.tab.active { background:var(--accent); color:#fff; }
+.tab:hover:not(.active) { background:var(--border); }
+
+/* Charts */
+.chart-wrap { position:relative; width:100%; max-width:700px; margin:0 auto; }
+.chart-wrap canvas { width:100% !important; }
+
+/* How-to */
+.howto-step { display:flex; gap:16px; margin-bottom:20px; }
+.howto-step .step-num { width:40px; height:40px; border-radius:50%; background:var(--accent); color:#fff; display:flex; align-items:center; justify-content:center; font-weight:700; flex-shrink:0; }
+.howto-step .step-content { flex:1; }
+
+/* Responsive */
+@media (max-width:900px) {
+  .sidebar { transform:translateX(-100%); }
+  .sidebar.open { transform:translateX(0); }
+  .main { margin-left:0; }
+  .menu-toggle { display:flex; }
+  .topbar .search-wrap { max-width:250px; }
+}
+@media (max-width:600px) {
+  .main { padding:16px; }
+  .topbar .search-wrap { max-width:150px; }
+  .topbar .logo { font-size:1rem; }
+  .flashcard-wrap { height:220px; }
+  .mindmap-container { height:350px; }
+}
+
+/* Tooltip */
+.tooltip { position:relative; }
+.tooltip::after { content:attr(data-tip); position:absolute; bottom:120%; left:50%; transform:translateX(-50%); background:var(--text); color:var(--bg); padding:4px 10px; border-radius:6px; font-size:0.75rem; white-space:nowrap; opacity:0; pointer-events:none; transition:opacity 0.2s; }
+.tooltip:hover::after { opacity:1; }
+
+/* Badge */
+.badge { display:inline-block; padding:3px 10px; border-radius:12px; font-size:0.7rem; font-weight:700; }
+.badge-r { background:rgba(99,102,241,0.15); color:var(--accent); }
+.badge-py { background:rgba(16,185,129,0.15); color:var(--success); }
+
+/* Search results dropdown */
+.search-results { position:absolute; top:100%; left:0; right:0; background:var(--bg2); border:1px solid var(--border); border-radius:var(--radius-sm); max-height:300px; overflow-y:auto; z-index:200; display:none; box-shadow:var(--shadow-lg); margin-top:4px; }
+.search-results.show { display:block; }
+.search-results .sr-item { padding:10px 16px; cursor:pointer; transition:var(--transition); border-bottom:1px solid var(--border); }
+.search-results .sr-item:hover { background:var(--bg3); }
+.search-results .sr-item .sr-title { font-weight:600; font-size:0.9rem; }
+.search-results .sr-item .sr-desc { font-size:0.8rem; color:var(--text3); }
+
+/* Toast */
+.toast { position:fixed; bottom:24px; right:24px; background:var(--text); color:var(--bg); padding:12px 24px; border-radius:24px; font-weight:600; z-index:999; animation:slideUp 0.3s ease; box-shadow:var(--shadow-lg); }
+@keyframes slideUp { from{opacity:0;transform:translateY(20px);} to{opacity:1;transform:translateY(0);} }
+</style>
+</head>
+<body>
+
+<!-- Topbar -->
+<header class="topbar">
+  <button class="menu-toggle top-actions" onclick="toggleSidebar()" aria-label="Menu"><i class="fas fa-bars"></i></button>
+  <span class="logo">📊 MuestreoStats</span>
+  <div class="search-wrap">
+    <i class="fas fa-search"></i>
+    <input type="text" id="globalSearch" placeholder="Buscar temas, términos, fórmulas..." oninput="handleGlobalSearch(this.value)">
+    <div class="search-results" id="searchResults"></div>
+  </div>
+  <div class="top-actions">
+    <button onclick="toggleTheme()" class="tooltip" data-tip="Tema" id="themeBtn"><i class="fas fa-moon"></i></button>
+    <button onclick="openPage('glossary')" class="tooltip" data-tip="Glosario"><i class="fas fa-book"></i></button>
+    <button onclick="openPage('formulas')" class="tooltip" data-tip="Fórmulas"><i class="fas fa-square-root-variable"></i></button>
+    <button onclick="openPage('howto')" class="tooltip" data-tip="Guía"><i class="fas fa-circle-question"></i></button>
+  </div>
+</header>
+
+<!-- Sidebar -->
+<nav class="sidebar" id="sidebar">
+  <div class="nav-section">📚 Temas</div>
+  <div class="nav-item active" onclick="openPage('topic0')" data-topic="0"><span class="dot" style="background:var(--c1)"></span>Introducción<span class="check" id="check0"><i class="fas fa-check-circle"></i></span></div>
+  <div class="nav-item" onclick="openPage('topic1')" data-topic="1"><span class="dot" style="background:var(--c2)"></span>Teoría de Muestreo<span class="check" id="check1"><i class="fas fa-check-circle"></i></span></div>
+  <div class="nav-item" onclick="openPage('topic2')" data-topic="2"><span class="dot" style="background:var(--c3)"></span>MAS (Aleatorio Simple)<span class="check" id="check2"><i class="fas fa-check-circle"></i></span></div>
+  <div class="nav-item" onclick="openPage('topic3')" data-topic="3"><span class="dot" style="background:var(--c4)"></span>Muestreo Estratificado<span class="check" id="check3"><i class="fas fa-check-circle"></i></span></div>
+  <div class="nav-item" onclick="openPage('topic4')" data-topic="4"><span class="dot" style="background:var(--c5)"></span>Probabilidades Simples<span class="check" id="check4"><i class="fas fa-check-circle"></i></span></div>
+  <div class="nav-item" onclick="openPage('topic5')" data-topic="5"><span class="dot" style="background:var(--c6)"></span>Prob. Proporcionales<span class="check" id="check5"><i class="fas fa-check-circle"></i></span></div>
+  <div class="nav-item" onclick="openPage('topic6')" data-topic="6"><span class="dot" style="background:var(--c7)"></span>Varias Etapas<span class="check" id="check6"><i class="fas fa-check-circle"></i></span></div>
+  <div class="nav-section">📈 Progreso</div>
+  <div style="padding:0 20px;">
+    <div class="progress-bar"><div class="fill" id="globalProgress" style="width:0%"></div></div>
+    <p style="font-size:0.8rem;color:var(--text3);text-align:center;"><span id="progressText">0/7</span> temas completados</p>
+  </div>
+</nav>
+
+<!-- Main Content -->
+<main class="main" id="mainContent"></main>
+
+<script>
+// ==================== DATA ====================
+const TOPICS = [
+  {
+    id:0, title:"Introducción al Muestreo", color:"#6366f1", icon:"fa-door-open",
+    summary:"Conceptos fundamentales del muestreo y análisis de encuestas: población objetivo, muestra, variables, cuestionarios, unidades de observación y muestreo, marco muestral, sesgos y ajustes post-encuesta.",
+    concepts:[
+      {term:"Población objetivo",def:"Colección completa de todas las unidades que se quieren estudiar, denotada por U. Debe especificar periodo de referencia, ubicación y criterios de inclusión."},
+      {term:"Muestra",def:"Subconjunto de la población, denotado por S. Su tamaño define la precisión y confiabilidad de las estimaciones."},
+      {term:"Variable de interés",def:"Característica de los individuos de la población que se quiere estudiar (ingreso, salud, educación, percepción)."},
+      {term:"Cuestionario",def:"Colección de preguntas que permite recolectar datos. Puede aplicarse por correo, presencial, teléfono o en línea."},
+      {term:"Unidad de observación",def:"Objeto sobre el cual se realiza la medición (hogares, personas, empresas)."},
+      {term:"Unidad de muestreo",def:"Objeto que se selecciona para llegar a la unidad de observación. En diseños por etapas puede diferir de la unidad observada."},
+      {term:"Muestreo probabilístico",def:"Cada unidad tiene probabilidad no nula de ser incluida. Permite inferencia precisa, cuantificar errores y reducir sesgo."},
+      {term:"Marco muestral",def:"Dispositivo para identificar y ubicar unidades muestrales. Puede ser de lista (archivos) o de área (mapas)."},
+      {term:"Sesgo de selección",def:"Ocurre antes de la recolección: selección subjetiva, población errónea, reemplazos subjetivos, voluntarios, no respuesta."},
+      {term:"Sesgo de medición",def:"Ocurre durante/después de la recolección: olvido, preguntas confusas, error del entrevistador, manipulación."},
+      {term:"Reponderación",def:"Reajuste de factores de expansión para compensar no respuesta o cobertura incompleta del marco."},
+      {term:"Imputación",def:"Asignación de valores perdidos cuando no hubo reemplazo. Puede usar métodos estocásticos o sistemáticos."}
+    ],
+    formulas:[
+      {name:"Tamaño muestral y precisión",latex:"\\text{Precisión} \\propto \\frac{1}{\\sqrt{n}}"},
+      {name:"Probabilidad de inclusión (probabilístico)",latex:"\\pi_k > 0 \\quad \\forall k \\in U"}
+    ],
+    rCode:`# Instalación de paquetes
+# install.packages("TeachingSampling")
+library(TeachingSampling)
+
+# Definir población
+N <- 1000
+poblacion <- data.frame(
+  id = 1:N,
+  ingreso = rlnorm(N, meanlog = 8, sdlog = 0.5)
+)
+
+# Muestra aleatoria simple
+n <- 100
+set.seed(123)
+muestra_ids <- sample(1:N, n)
+muestra <- poblacion[muestra_ids, ]
+
+# Estimación de la media
+media_muestral <- mean(muestra$ingreso)
+cat("Media muestral:", round(media_muestral, 2))`,
+    pyCode:`import numpy as np
+import pandas as pd
+
+# Definir población
+N = 1000
+np.random.seed(123)
+poblacion = pd.DataFrame({
+    'id': range(1, N+1),
+    'ingreso': np.random.lognormal(mean=8, sigma=0.5, size=N)
+})
+
+# Muestra aleatoria simple
+n = 100
+muestra_ids = np.random.choice(N, n, replace=False)
+muestra = poblacion.iloc[muestra_ids]
+
+# Estimación de la media
+media_muestral = muestra['ingreso'].mean()
+print(f"Media muestral: {media_muestral:.2f}")`,
+    quiz:[
+      {q:"¿Qué es una población objetivo?",opts:["Una muestra representativa","La colección completa de unidades a estudiar","Un subconjunto aleatorio","El cuestionario aplicado"],ans:1,exp:"La población objetivo (U) es la colección completa de todas las unidades que se quieren estudiar."},
+      {q:"¿Qué caracteriza al muestreo probabilístico?",opts:["Selección por conveniencia","Cada unidad tiene probabilidad no nula de inclusión","Solo participan voluntarios","No requiere marco muestral"],ans:1,exp:"En el muestreo probabilístico, cada unidad tiene π_k > 0 de ser incluida."},
+      {q:"El sesgo de selección ocurre:",opts:["Durante la recolección","Después del análisis","Antes de la recolección de datos","Solo en encuestas telefónicas"],ans:2,exp:"El sesgo de selección ocurre antes de la recolección, asociado al diseño y selección."},
+      {q:"¿Qué es la reponderación?",opts:["Cambiar las preguntas","Reajuste de factores de expansión","Seleccionar nueva muestra","Eliminar valores atípicos"],ans:1,exp:"La reponderación reajusta los factores de expansión para compensar no respuesta."},
+      {q:"Un marco muestral de área utiliza:",opts:["Listas de correos","Archivos Excel","Mapas, planos, fotos satelitales","Bases de datos SQL"],ans:2,exp:"El marco de área emplea mapas, planos y fotos satelitales para ubicar unidades."}
+    ]
+  },
+  {
+    id:1, title:"Teoría de Muestreo", color:"#8b5cf6", icon:"fa-flask",
+    summary:"Fundamentos matemáticos del muestreo probabilístico en poblaciones finitas: soportes, diseños de muestreo, probabilidades de inclusión, estimadores de Horvitz-Thompson y Hájek, sesgo, varianza y error cuadrático medio.",
+    concepts:[
+      {term:"Población finita",def:"Conjunto de N elementos identificables sin ambigüedad. U = {1, 2, ..., N}."},
+      {term:"Muestra aleatoria",def:"Subconjunto de U extraído mediante mecanismo probabilístico. S (variable aleatoria), s (realización)."},
+      {term:"Muestra sin reemplazo",def:"Cada elemento se selecciona entre los no escogidos. I_k ∈ {0,1}, sin repeticiones."},
+      {term:"Muestra con reemplazo",def:"Un elemento puede seleccionarse múltiples veces. n_k cuenta las apariciones del elemento k."},
+      {term:"Soporte de muestreo Q",def:"Conjunto de todas las muestras posibles. S = {0,1}^N tiene cardinalidad 2^N."},
+      {term:"Diseño de muestreo p(·)",def:"Distribución de probabilidad sobre Q: p(s) ≥ 0, Σ p(s) = 1."},
+      {term:"Probabilidad de inclusión π_k",def:"π_k = Pr(k ∈ S) = Σ_{s∋k} p(s). E(I_k) = π_k."},
+      {term:"Probabilidad de inclusión π_{kl}",def:"π_{kl} = Pr(k ∈ S ∧ l ∈ S). Cov(I_k, I_l) = π_{kl} - π_k π_l."},
+      {term:"Estimador de Horvitz-Thompson",def:"ť_{y,π} = Σ_S y_k/π_k. Insesgado si π_k > 0 ∀k. d_k = 1/π_k es el factor de expansión."},
+      {term:"Estimador de Hájek",def:"ȳ_S = (Σ_S y_k/π_k) / (Σ_S 1/π_k). Estimador de razón, útil cuando N es desconocido."},
+      {term:"Sesgo B(Ť)",def:"B(Ť) = E(Ť) - T. Si B = 0, el estimador es insesgado."},
+      {term:"Error cuadrático medio",def:"ECM(Ť) = Var(Ť) + B²(Ť). Si B = 0, ECM = Var."},
+      {term:"Coeficiente de variación",def:"cve = √Var(Ť) / Ť. Error estándar relativo; menor ⇒ más preciso."}
+    ],
+    formulas:[
+      {name:"Esperanza del estimador",latex:"E(\\hat{T}) = \\sum_{s \\in Q} p(s) \\hat{T}(s)"},
+      {name:"Varianza del estimador",latex:"\\text{Var}(\\hat{T}) = \\sum_{s \\in Q} p(s)[\\hat{T}(s) - E(\\hat{T})]^2"},
+      {name:"Sesgo",latex:"B(\\hat{T}) = E(\\hat{T}) - T"},
+      {name:"Error Cuadrático Medio",latex:"\\text{ECM}(\\hat{T}) = \\text{Var}(\\hat{T}) + B^2(\\hat{T})"},
+      {name:"Estimador HT del total",latex:"\\hat{t}_{y,\\pi} = \\sum_{k \\in S} \\frac{y_k}{\\pi_k} = \\sum_{k \\in S} d_k y_k"},
+      {name:"Varianza del estimador HT",latex:"\\text{Var}_1(\\hat{t}_{y,\\pi}) = \\sum_U \\sum_U \\Delta_{kl} \\frac{y_k}{\\pi_k}\\frac{y_l}{\\pi_l}"},
+      {name:"Delta kl",latex:"\\Delta_{kl} = \\pi_{kl} - \\pi_k \\pi_l"},
+      {name:"Intervalo de confianza",latex:"IC_{1-\\alpha} = [\\hat{t} - z_{1-\\alpha/2}\\sqrt{\\text{Var}}, \\hat{t} + z_{1-\\alpha/2}\\sqrt{\\text{Var}}]"},
+      {name:"Estimador de Hájek (media)",latex:"\\bar{y}_S = \\frac{\\sum_S y_k/\\pi_k}{\\sum_S 1/\\pi_k}"},
+      {name:"Tamaño muestral esperado",latex:"E[n(S)] = \\sum_U \\pi_k"}
+    ],
+    rCode:`library(TeachingSampling)
+
+# Población de ejemplo
+U <- c("Yves","Ken","Erik","Sharon","Leslie")
+y <- c(32, 34, 46, 89, 35)
+N <- length(U)
+
+# Soporte: todas las muestras sin reemplazo de tamaño 2
+n <- 2
+soporte <- Support(N, n, U)
+print(soporte)
+
+# Probabilidades de inclusión
+p <- c(0.13, 0.20, 0.15, 0.10, 0.15, 0.04, 0.02, 0.06, 0.07, 0.08)
+Ind <- Ik(N, n)
+pik <- Pik(p, Ind)
+print(pik)  # π_k para cada elemento
+
+# Estimación Horvitz-Thompson
+# Para la muestra {Yves, Ken}:
+sel <- c(1, 2)
+t_HT <- sum(y[sel] / pik[sel])
+cat("Estimación HT del total:", round(t_HT, 2))
+cat("Total real:", sum(y))`,
+    pyCode:`import numpy as np
+from itertools import combinations
+
+# Población de ejemplo
+U = ["Yves", "Ken", "Erik", "Sharon", "Leslie"]
+y = np.array([32, 34, 46, 89, 35])
+N = len(U)
+t_y = y.sum()
+
+# Todas las muestras sin reemplazo de tamaño 2
+muestras = list(combinations(range(N), 2))
+print(f"Total de muestras posibles: {len(muestras)}")
+
+# Probabilidades de inclusión (ejemplo)
+p = np.array([0.13, 0.20, 0.15, 0.10, 0.15, 0.04, 0.02, 0.06, 0.07, 0.08])
+pik = np.array([0.58, 0.34, 0.48, 0.33, 0.27])
+
+# Estimación HT para muestra {Yves, Ken}
+sel = [0, 1]
+t_HT = sum(y[k] / pik[k] for k in sel)
+print(f"Estimación HT del total: {t_HT:.2f}")
+print(f"Total real: {t_y}")`,
+    quiz:[
+      {q:"¿Cuál es la cardinalidad del soporte S = {0,1}^N?",opts:["N","N²","2^N","C(N,2)"],ans:2,exp:"El soporte simétrico sin reemplazo tiene cardinalidad 2^N."},
+      {q:"El estimador de Horvitz-Thompson es insesgado si:",opts:["n > 30","π_k > 0 ∀k","La población es normal","El muestreo es con reemplazo"],ans:1,exp:"La condición de insesgamiento es π_k > 0 para todo k ∈ U."},
+      {q:"¿Qué mide el error cuadrático medio?",opts:["Solo el sesgo","Solo la varianza","Varianza más sesgo al cuadrado","La media poblacional"],ans:2,exp:"ECM = Var + B², incorpora ambas fuentes de error."},
+      {q:"El factor de expansión d_k es:",opts:["π_k","1/π_k","N/n","n/N"],ans:1,exp:"d_k = 1/π_k, el inverso de la probabilidad de inclusión."},
+      {q:"Δ_{kl} se define como:",opts:["π_k + π_l","π_{kl} - π_k π_l","π_k × π_l","1 - π_k"],ans:1,exp:"Δ_{kl} = π_{kl} - π_k π_l = Cov(I_k, I_l)."}
+    ]
+  },
+  {
+    id:2, title:"Muestreo Aleatorio Simple (MAS)", color:"#ec4899", icon:"fa-shuffle",
+    summary:"El diseño más fundamental: cada unidad tiene igual probabilidad de selección. Se cubre el MAS con y sin reemplazo, estimación de medias, totales, proporciones, varianzas y determinación de tamaño muestral.",
+    concepts:[
+      {term:"MAS sin reemplazo",def:"De una población de N elementos, se seleccionan n sin reemplazo. Hay C(N,n) muestras posibles, cada una con probabilidad 1/C(N,n)."},
+      {term:"Probabilidad de inclusión (MAS)",def:"π_k = n/N para todo k. π_{kl} = n(n-1)/(N(N-1)) para k ≠ l."},
+      {term:"Estimador de la media",def:"ȳ_s = (1/n) Σ_S y_k. Insesgado con Var(ȳ_s) = (1 - n/N) S²_yU / n."},
+      {term:"Factor de corrección finita",def:"fcp = 1 - n/N = 1 - f. Cuando N es grande, fcp ≈ 1."},
+      {term:"Estimador del total",def:"ť = N · ȳ_s. Var(ť) = N² (1 - n/N) S²_yU / n."},
+      {term:"Varianza muestral",def:"s² = (1/(n-1)) Σ_S (y_k - ȳ_s)². Estimador insesgado de S²_yU."},
+      {term:"Tamaño de muestra para media",def:"n = (z² S²) / (e² + z² S²/N), donde e es el margen de error deseado."}
+    ],
+    formulas:[
+      {name:"Media muestral",latex:"\\bar{y}_s = \\frac{1}{n}\\sum_{k \\in S} y_k"},
+      {name:"Varianza de la media (MAS sin reemplazo)",latex:"\\text{Var}(\\bar{y}_s) = \\left(1 - \\frac{n}{N}\\right)\\frac{S^2_{yU}}{n}"},
+      {name:"Varianza muestral",latex:"s^2 = \\frac{1}{n-1}\\sum_{k \\in S}(y_k - \\bar{y}_s)^2"},
+      {name:"Estimador del total",latex:"\\hat{t} = N \\cdot \\bar{y}_s"},
+      {name:"Tamaño de muestra (media)",latex:"n = \\frac{z^2_{\\alpha/2} S^2}{e^2 + z^2_{\\alpha/2} S^2/N}"},
+      {name:"Tamaño de muestra (proporción)",latex:"n = \\frac{z^2_{\\alpha/2} P(1-P)}{e^2 + z^2_{\\alpha/2} P(1-P)/N}"},
+      {name:"Factor de corrección finita",latex:"fcp = 1 - \\frac{n}{N}"}
+    ],
+    rCode:`# MAS sin reemplazo
+library(TeachingSampling)
+data(BigCity)
+N <- nrow(BigCity)
+n <- 500
+
+# Selección de muestra
+set.seed(123)
+sam <- S.SI(N, n)
+muestra <- BigCity[sam, ]
+
+# Estimación de totales y medias
+# Usando TeachingSampling
+est <- E.SI(N, n, muestra$Income)
+cat("Total estimado de Income:", round(est[1,1], 2))
+cat("Error estándar:", round(est[2,1], 2))
+cat("CVE (%):", round(est[3,1], 2))
+
+# Media
+media_est <- est[1,1] / N
+cat("Media estimada:", round(media_est, 2))`,
+    pyCode:`import numpy as np
+
+# Simulación de población
+N = 10000
+np.random.seed(123)
+y = np.random.lognormal(mean=8, sigma=0.6, size=N)
+S2 = np.var(y, ddof=1)  # Varianza poblacional
+
+# MAS sin reemplazo
+n = 200
+muestra_ids = np.random.choice(N, n, replace=False)
+muestra = y[muestra_ids]
+
+# Estimaciones
+media_muestral = muestra.mean()
+s2 = np.var(muestra, ddof=1)
+fcp = 1 - n/N
+var_media = fcp * s2 / n
+ee_media = np.sqrt(var_media)
+
+print(f"Media muestral: {media_muestral:.2f}")
+print(f"Error estándar: {ee_media:.2f}")
+print(f"IC 95%: [{media_muestral - 1.96*ee_media:.2f}, {media_muestral + 1.96*ee_media:.2f}]")`,
+    quiz:[
+      {q:"En MAS sin reemplazo, ¿cuál es π_k?",opts:["1/N","n/N","1/n","N/n"],ans:1,exp:"En MAS sin reemplazo, π_k = n/N para todo elemento k."},
+      {q:"El factor de corrección finita (fcp) es:",opts:["n/N","N/n","1 - n/N","1 - N/n"],ans:2,exp:"fcp = 1 - n/N. Cuando N >> n, fcp ≈ 1."},
+      {q:"¿Cuántas muestras posibles hay en MAS sin reemplazo?",opts:["N^n","n^N","C(N,n)","N!"],ans:2,exp:"Hay C(N,n) = N!/(n!(N-n)!) muestras posibles."},
+      {q:"La varianza muestral s² usa como denominador:",opts:["n","n-1","N","N-1"],ans:1,exp:"s² divide por n-1 para ser un estimador insesgado de S²_yU."},
+      {q:"Si N es muy grande, la varianza de la media es aproximadamente:",opts:["S²/N","S²/n","S²","n·S²"],ans:1,exp:"Con N grande, fcp ≈ 1, y Var(ȳ_s) ≈ S²/n."}
+    ]
+  },
+  {
+    id:3, title:"Muestreo Estratificado", color:"#f43f5e", icon:"fa-layer-group",
+    summary:"La población se divide en H estratos homogéneos internamente. Se cubre la asignación proporcional, de Neyman, estimación de totales y medias, y práctica con R.",
+    concepts:[
+      {term:"Estratificación",def:"Partición de U en H subgrupos disjuntos y exhaustivos. Mejora la eficiencia al reducir la varianza entre estratos."},
+      {term:"Estratos vs Dominios",def:"Los estratos se forman antes de la recolección; los dominios después. Ambos son subpoblaciones de interés."},
+      {term:"Asignación proporcional",def:"n_h/N_h = n/N constante. Cada unidad representa el mismo número de elementos en la población."},
+      {term:"Asignación de Neyman",def:"n_h ∝ N_h S_{yU_h}. Minimiza la varianza del estimador HT para un n fijo."},
+      {term:"Estimador del total (estratificado)",def:"ť_{y,π} = Σ_h (N_h/n_h) Σ_{S_h} y_k. Suma de estimadores independientes por estrato."},
+      {term:"Varianza (estratificado)",def:"Var(ť_{y,π}) = Σ_h (N_h²/n_h)(1 - n_h/N_h) s²_{yh}. Suma de varianzas independientes."}
+    ],
+    formulas:[
+      {name:"Total poblacional (estratificado)",latex:"t_y = \\sum_{h=1}^{H} \\sum_{k \\in U_h} y_k"},
+      {name:"Media poblacional (estratificado)",latex:"\\bar{y}_U = \\frac{1}{N}\\sum_{h=1}^{H} N_h \\bar{y}_{U_h}"},
+      {name:"Estimador HT del total",latex:"\\hat{t}_{y,\\pi} = \\sum_{h=1}^{H} \\frac{N_h}{n_h} \\sum_{k \\in S_h} y_k"},
+      {name:"Varianza estimada del total",latex:"\\widehat{\\text{Var}}(\\hat{t}_{y,\\pi}) = \\sum_{h=1}^{H} \\frac{N_h^2}{n_h}\\left(1 - \\frac{n_h}{N_h}\\right) s^2_{yh}"},
+      {name:"Asignación proporcional",latex:"\\frac{n_h}{N_h} = \\frac{n}{N} \\quad \\forall h"},
+      {name:"Asignación de Neyman",latex:"n_h = n \\cdot \\frac{N_h S_{yU_h}}{\\sum_{h} N_h S_{yU_h}}"}
+    ],
+    rCode:`library(TeachingSampling)
+library(dplyr)
+data(BigCity)
+
+# Agregar variable de estrato (zona)
+BigCity <- BigCity %>% mutate(Zone = ifelse(Zone == "Rural", 1, 2))
+
+# Tamaños por estrato
+Nh <- BigCity %>% group_by(Zone) %>% summarise(Nh = n())
+N <- sum(Nh$Nh)
+n <- 2000
+
+# Asignación proporcional
+nh_prop <- round(Nh$Nh / N * n)
+
+# Selección estratificada
+set.seed(123)
+sam <- S.STSI(Nh$Nh, nh_prop)
+muestra <- BigCity[sam, ]
+
+# Estimación
+est <- E.STSI(Nh$Nh, nh_prop, muestra$Income, Stratum = muestra$Zone)
+print(est)`,
+    pyCode:`import numpy as np
+import pandas as pd
+
+# Simular población estratificada
+N = 10000
+estratos = np.random.choice(['Rural', 'Urbano'], N, p=[0.4, 0.6])
+y = np.where(estratos == 'Rural',
+    np.random.lognormal(7.8, 0.5, N),
+    np.random.lognormal(8.3, 0.6, N))
+df = pd.DataFrame({'estrato': estratos, 'y': y})
+
+# Asignación proporcional
+n = 500
+props = df['estrato'].value_counts(normalize=True)
+nh = (props * n).round().astype(int)
+
+# Muestreo estratificado
+muestras = []
+for estrato, n_h in nh.items():
+    pool = df[df['estrato'] == estrato]
+    muestra_h = pool.sample(n_h, random_state=123)
+    muestras.append(muestra_h)
+muestra = pd.concat(muestras)
+
+# Estimación de media por estrato
+medias = muestra.groupby('estrato')['y'].mean()
+print("Medias por estrato:")
+print(medias)
+print(f"Media global estimada: {(medias * props).sum():.2f}")`,
+    quiz:[
+      {q:"¿Cuándo se forman los estratos?",opts:["Después de recolectar datos","Antes de la recolección","Durante el análisis","No importa"],ans:1,exp:"Los estratos se forman antes de la recolección usando información auxiliar del marco."},
+      {q:"La asignación proporcional implica:",opts:["n_h igual para todos","n_h/N_h constante","n_h ∝ S_yh","Muestras del mismo tamaño"],ans:1,exp:"En asignación proporcional, la fracción de muestreo f_h = n_h/N_h es constante."},
+      {q:"La asignación de Neyman minimiza:",opts:["El costo","El tamaño de muestra","La varianza del estimador","El número de estratos"],ans:2,exp:"Neyman minimiza la varianza del estimador HT para un tamaño de muestra fijo."},
+      {q:"¿Por qué la estratificación reduce la varianza?",opts:["Aumenta n","Elimina la variabilidad entre estratos","Usa más variables","Siempre usa Neyman"],ans:1,exp:"Al formar estratos homogéneos, la variabilidad entre estratos se controla, reduciendo la varianza total."},
+      {q:"En el estimador estratificado del total, las muestras por estrato son:",opts:["Dependientes","Independientes","Idénticas","Con reemplazo"],ans:1,exp:"La selección es independiente entre estratos, lo que permite sumar varianzas."}
+    ]
+  },
+  {
+    id:4, title:"Probabilidades Simples", color:"#f97316", icon:"fa-dice",
+    summary:"Muestreo Bernoulli (tamaño aleatorio, probabilidad constante) y muestreo sistemático (proxy del MAS sin marco explícito). Comparación de eficiencia y práctica en R.",
+    concepts:[
+      {term:"Muestreo Bernoulli",def:"Cada unidad se selecciona con probabilidad constante π, independientemente. Tamaño muestral aleatorio: n(S) ~ Binomial(N, π)."},
+      {term:"Diseño Bernoulli",def:"p(s) = π^{n(s)}(1-π)^{N-n(s)}. Soporte Q con 2^N muestras posibles."},
+      {term:"Estimador HT (Bernoulli)",def:"ť_{y,π} = (1/π) Σ_S y_k. Var estimada = (1/π)(1/π - 1) Σ_S y_k²."},
+      {term:"Muestreo sistemático",def:"Con arranque aleatorio r, se selecciona cada k-ésima unidad. k = N/n (intervalo de muestreo)."},
+      {term:"Diseño sistemático",def:"p(s) = 1/k para cada muestra posible. NO es MAS: π_{kj} = 0 para elementos contiguos."},
+      {term:"Estimador HT (sistemático)",def:"ť_HT = k · t_ST donde t_ST = Σ_S y_k. No hay estimación insesgada de varianza."},
+      {term:"Ordenamiento periódico",def:"Puede producir muestras no representativas si el intervalo coincide con patrones cíclicos."}
+    ],
+    formulas:[
+      {name:"Probabilidad diseño Bernoulli",latex:"p(s) = \\pi^{n(s)}(1-\\pi)^{N-n(s)}"},
+      {name:"Tamaño muestral esperado (Bernoulli)",latex:"E[n(S)] = N\\pi, \\quad \\text{Var}(n(S)) = N\\pi(1-\\pi)"},
+      {name:"Estimador HT (Bernoulli)",latex:"\\hat{t}_{y,\\pi} = \\frac{1}{\\pi}\\sum_{k \\in S} y_k"},
+      {name:"Varianza estimada (Bernoulli)",latex:"\\widehat{\\text{Var}}(\\hat{t}_{y,\\pi}) = \\frac{1}{\\pi}\\left(\\frac{1}{\\pi} - 1\\right)\\sum_{k \\in S} y_k^2"},
+      {name:"Intervalo de muestreo (sistemático)",latex:"k = \\frac{N}{n} \\quad \\text{o} \\quad k = \\lfloor N/n \\rfloor + 1"},
+      {name:"Estimador HT (sistemático)",latex:"\\hat{t}_{HT} = k \\cdot \\sum_{k \\in S} y_k"}
+    ],
+    rCode:`library(TeachingSampling)
+data(BigCity)
+N <- nrow(BigCity)
+
+# Muestreo Bernoulli con pi = 0.025
+pi <- 0.025
+set.seed(123)
+sam <- S.BE(N, pi)
+muestra <- BigCity[sam, ]
+cat("Tamaño de muestra obtenido:", nrow(muestra))
+
+# Estimación
+est <- E.BE(N, pi, muestra$Income)
+cat("Total estimado:", round(est[1,1], 2))
+cat("CVE (%):", round(est[3,1], 2))
+
+# Muestreo sistemático
+k <- 40
+set.seed(123)
+sam_sys <- S.SY(N, k)
+muestra_sys <- BigCity[sam_sys, ]
+est_sys <- E.SY(N, k, muestra_sys$Income)
+cat("Total estimado (sistemático):", round(est_sys[1,1], 2))`,
+    pyCode:`import numpy as np
+
+N = 10000
+y = np.random.lognormal(8, 0.6, N)
+
+# Muestreo Bernoulli
+pi = 0.05
+incluidos = np.random.random(N) < pi
+muestra_bern = y[incluidos]
+n_bern = len(muestra_bern)
+
+t_HT_bern = muestra_bern.sum() / pi
+print(f"Bernoulli - n obtenido: {n_bern}, Total estimado: {t_HT_bern:.0f}")
+
+# Muestreo sistemático
+n = 200
+k = N // n
+r = np.random.randint(0, k)
+indices_sys = np.arange(r, N, k)[:n]
+muestra_sys = y[indices_sys]
+
+t_HT_sys = k * muestra_sys.sum()
+print(f"Sistemático - Total estimado: {t_HT_sys:.0f}")`,
+    quiz:[
+      {q:"En muestreo Bernoulli, el tamaño de muestra es:",opts:["Fijo","Aleatorio (Binomial)","Siempre N/2","Igual a π"],ans:1,exp:"n(S) ~ Binomial(N, π), por lo que el tamaño muestral es aleatorio."},
+      {q:"¿Por qué el muestreo sistemático NO es MAS?",opts:["Usa reemplazo","π_{kj}=0 para elementos contiguos","No es probabilístico","Requiere marco"],ans:1,exp:"Dos elementos contiguos tienen probabilidad cero de co-selección, violando la definición de MAS."},
+      {q:"El intervalo de muestreo k se define como:",opts:["n/N","N/n","√N","N·n"],ans:1,exp:"k = N/n (o ⌊N/n⌋+1 si no es entero)."},
+      {q:"¿Cuál es una limitación del muestreo sistemático?",opts:["Es muy costoso","No se puede estimar varianza insesgadamente","Requiere software especial","Solo funciona con N pequeño"],ans:1,exp:"No es posible una estimación insesgada de la varianza porque π_{kj}=0 para algunos pares."},
+      {q:"El ordenamiento periódico puede causar:",opts:["Mayor precisión","Muestras no representativas","Menor costo","Tamaño fijo"],ans:1,exp:"Si el intervalo coincide con patrones cíclicos, la muestra puede ser sesgada."}
+    ]
+  },
+  {
+    id:5, title:"Probabilidades Proporcionales", color:"#eab308", icon:"fa-chart-simple",
+    summary:"Diseños con probabilidades de inclusión proporcionales a una variable auxiliar: muestreo Poisson (tamaño aleatorio) y πPT (tamaño fijo). Método de Sunter, inclusión forzosa y aproximación de Tillé.",
+    concepts:[
+      {term:"Muestreo Poisson",def:"Generalización del Bernoulli: π_k diferente para cada unidad. p(s) = Π_{k∈s} π_k · Π_{k∉s} (1-π_k)."},
+      {term:"Diseño πPT",def:"Sin reemplazo, probabilidades proporcionales a x_k, tamaño fijo. π_k = n · x_k / t_x."},
+      {term:"Inclusión forzosa",def:"Cuando π_k > 1, se fuerza π_k = 1 y se recalcula para el resto de la población."},
+      {term:"Método de Sunter",def:"Algoritmo secuencial: ordena por x_k descendente, usa umbrales adaptativos w_k para garantizar tamaño fijo."},
+      {term:"Propiedad de calibración",def:"ť_{x,π} = t_x con varianza nula. El estimador HT del total de la variable auxiliar reproduce exactamente el total."},
+      {term:"Aproximación de Tillé",def:"Evita calcular π_{kl} usando c_k = (1-π_k)·n/(n-1) y un estimador de varianza aproximado."}
+    ],
+    formulas:[
+      {name:"Probabilidad diseño Poisson",latex:"p(s) = \\prod_{k \\in s} \\pi_k \\prod_{k \\notin s} (1 - \\pi_k)"},
+      {name:"π_k proporcionales",latex:"\\pi_k = n \\cdot \\frac{x_k}{\\sum_U x_k}"},
+      {name:"Estimador HT (Poisson)",latex:"\\hat{t}_{y,\\pi} = \\sum_{k \\in S} \\frac{y_k}{\\pi_k}"},
+      {name:"Varianza estimada (Poisson)",latex:"\\widehat{\\text{Var}}(\\hat{t}_{y,\\pi}) = \\sum_{k \\in S} (1 - \\pi_k)\\left(\\frac{y_k}{\\pi_k}\\right)^2"},
+      {name:"Aproximación de Tillé",latex:"c_k = (1 - \\pi_k)\\frac{n}{n-1}"},
+      {name:"Calibración",latex:"\\hat{t}_{x,\\pi} = t_x, \\quad \\text{Var}(\\hat{t}_{x,\\pi}) = 0"}
+    ],
+    rCode:`library(TeachingSampling)
+library(dplyr)
+data(BigCity)
+
+# Agrupar por hogar y calcular variable auxiliar
+Hogares <- BigCity %>% group_by(HHID) %>%
+  summarise(Income = sum(Income), Personas = n())
+
+N <- nrow(Hogares)
+n <- 2000
+
+# Probabilidades proporcionales a Personas
+pik <- n * Hogares$Personas / sum(Hogares$Personas)
+summary(pik)
+
+# Muestreo Poisson
+set.seed(123)
+sam_po <- S.PO(pik)
+muestra_po <- Hogares[sam_po, ]
+cat("Tamaño muestra Poisson:", nrow(muestra_po))
+
+# Estimación Poisson
+est_po <- E.PO(muestra_po$Income, pik[sam_po])
+print(est_po)
+
+# Muestreo πPT (tamaño fijo)
+sam_ppt <- S.piPS(n, pik)
+muestra_ppt <- Hogares[sam_ppt, ]
+est_ppt <- E.piPS(muestra_ppt$Income, pik[sam_ppt])
+print(est_ppt)`,
+    pyCode:`import numpy as np
+
+N = 5000
+x = np.random.uniform(1, 10, N)  # Variable auxiliar
+y = 500 + 200 * x + np.random.normal(0, 100, N)  # Variable de interés
+n = 200
+
+# Probabilidades proporcionales a x
+pik = n * x / x.sum()
+pik = np.clip(pik, 0, 1)  # Asegurar π_k ≤ 1
+
+# Muestreo Poisson
+incluidos = np.random.random(N) < pik
+muestra_po = y[incluidos]
+pik_sel = pik[incluidos]
+
+t_HT_po = (muestra_po / pik_sel).sum()
+var_HT_po = ((1 - pik_sel) * (muestra_po / pik_sel)**2).sum()
+print(f"Poisson - Total estimado: {t_HT_po:.0f}, EE: {np.sqrt(var_HT_po):.0f}")
+
+# Muestreo πPT simplificado (selección sistemática con probabilidades)
+cum_pik = np.cumsum(pik)
+step = cum_pik[-1] / n
+start = np.random.uniform(0, step)
+indices = np.searchsorted(cum_pik, np.arange(start, cum_pik[-1], step))
+muestra_ppt = y[indices]
+pik_ppt = pik[indices]
+
+t_HT_ppt = (muestra_ppt / pik_ppt).sum()
+print(f"πPT - Total estimado: {t_HT_ppt:.0f}")`,
+    quiz:[
+      {q:"El muestreo Poisson se diferencia del Bernoulli en:",opts:["Usa reemplazo","π_k varía por unidad","Es determinístico","No es probabilístico"],ans:1,exp:"Poisson generaliza Bernoulli permitiendo π_k diferente para cada unidad."},
+      {q:"¿Qué es la inclusión forzosa?",opts:["Obligar a todos a participar","π_k = 1 para algunas unidades","Usar solo voluntarios","Muestreo sin marco"],ans:1,exp:"Cuando π_k > 1 en el cálculo inicial, se fuerza π_k = 1 (inclusión forzosa)."},
+      {q:"La propiedad de calibración significa:",opts:["El estimador siempre es exacto","ť_{x,π} = t_x con varianza nula","No hay error","La muestra es perfecta"],ans:1,exp:"El estimador HT del total de la variable auxiliar reproduce exactamente el total poblacional."},
+      {q:"La aproximación de Tillé evita calcular:",opts:["Las medias","Los totales","Las probabilidades de segundo orden π_{kl}","El tamaño muestral"],ans:2,exp:"Tillé (2002) propuso una aproximación que evita el cálculo de los N² términos π_{kl}."},
+      {q:"El diseño πPT garantiza:",opts:["Tamaño muestral aleatorio","Tamaño muestral fijo","Muestreo con reemplazo","Probabilidades iguales"],ans:1,exp:"πPT combina sin reemplazo, probabilidades proporcionales y tamaño muestral fijo."}
+    ]
+  },
+  {
+    id:6, title:"Muestreo en Varias Etapas", color:"#22c55e", icon:"fa-diagram-project",
+    summary:"Muestreo por conglomerados y en varias etapas (UPM, USM, UTM). Efecto de diseño (Deff), correlación intraclase, estimación en dos etapas y estratificación de UPM.",
+    concepts:[
+      {term:"Conglomerado",def:"Agrupación natural de elementos (barrios, escuelas). Partición disjunta y exhaustiva de la población."},
+      {term:"UPM / USM / UTM",def:"Unidad Primaria, Secundaria y Terciaria de Muestreo. Jerarquía: Ciudad → Escuelas → Alumnos."},
+      {term:"Efecto de diseño (Deff)",def:"Deff = Var_complejo / Var_MAS. Deff < 1: más eficiente que MAS; Deff > 1: menos eficiente."},
+      {term:"Correlación intraclase (ρ)",def:"Mide homogeneidad dentro de conglomerados. Deff = 1 + (m̄ - 1)ρ en muestreo bietápico."},
+      {term:"Tamaño efectivo",def:"n_efectivo = n / Deff. Equivalente en precisión a un MAS de ese tamaño."},
+      {term:"Principio de invariancia",def:"La probabilidad de selección en una etapa no depende del diseño de etapas anteriores."},
+      {term:"Principio de independencia",def:"El sub-muestreo es independiente entre unidades de la misma etapa o etapas diferentes."},
+      {term:"Estimador HT (dos etapas)",def:"ť_{y,π} = Σ_{j∈S_I} Σ_{k∈S_j} y_k / (π_{j_I} · π_{k|j})."}
+    ],
+    formulas:[
+      {name:"Efecto de diseño",latex:"\\text{Deff} = \\frac{\\text{Var}_{\\text{complejo}}}{\\text{Var}_{\\text{MAS}}}"},
+      {name:"Deff bietápico",latex:"\\text{Deff} = 1 + (\\bar{m} - 1)\\rho"},
+      {name:"Tamaño efectivo",latex:"n_{\\text{efectivo}} = \\frac{n}{\\text{Deff}}"},
+      {name:"Estimador HT (2 etapas)",latex:"\\hat{t}_{y,\\pi} = \\sum_{j \\in S_I} \\sum_{k \\in S_j} \\frac{y_k}{\\pi_{j_I} \\cdot \\pi_{k|j}}"},
+      {name:"Varianza (2 etapas)",latex:"\\text{Var}(\\hat{t}) = \\text{Var}_{\\text{UPM}} + \\text{Var}_{\\text{USM}}"},
+      {name:"MAS-MAS (2 etapas)",latex:"\\hat{t}_{y,\\pi} = \\frac{N_I}{n_I} \\sum_{i \\in S_I} \\frac{N_i}{n_i} \\sum_{k \\in S_i} y_k"}
+    ],
+    rCode:`library(TeachingSampling)
+library(dplyr)
+data(BigCity)
+
+# Agregar por UPM (conglomerados)
+Agrega <- BigCity %>% group_by(PSU) %>%
+  summarise(Ni = n(), Income = sum(Income), Gasto = sum(Expenditure))
+NI <- nrow(Agrega)
+
+# Muestreo de conglomerados (1 etapa)
+nI <- 100
+set.seed(123)
+samI <- S.SI(NI, nI)
+est_1etapa <- E.1SI(NI, nI, Agrega$Income[samI], Agrega$Ni[samI])
+print(est_1etapa)
+
+# Muestreo en dos etapas
+nI <- 200
+prop <- 0.4  # Sub-muestreo del 40%
+set.seed(123)
+samI <- S.SI(NI, nI)
+# Para cada UPM seleccionada, sub-muestrear
+ni <- round(Agrega$Ni[samI] * prop)
+est_2etapas <- E.2SI(NI, nI, Agrega$Ni[samI], ni,
+                      Agrega$Income[samI], Agrega$Ni[samI])
+print(est_2etapas)`,
+    pyCode:`import numpy as np
+
+# Simular población con estructura de conglomerados
+NI = 500  # Número de UPMs
+Ni = np.random.randint(20, 100, NI)  # Tamaños de UPM
+N = Ni.sum()
+
+# Generar datos con correlación intraclase
+rho = 0.05
+y = np.zeros(N)
+idx = 0
+for i in range(NI):
+    mu_i = np.random.lognormal(8, 0.3)
+    for j in range(Ni[i]):
+        y[idx] = np.random.lognormal(mu_i, 0.5 * (1 - rho))
+        idx += 1
+
+# Muestreo en dos etapas
+nI = 50
+upm_sel = np.random.choice(NI, nI, replace=False)
+prop_sub = 0.3
+
+total_est = 0
+for i in upm_sel:
+    ni = max(1, int(Ni[i] * prop_sub))
+    # Simular sub-muestra
+    y_sub = y[:Ni[i]][:ni]  # Simplificado
+    total_upm_est = Ni[i] * y_sub.mean()
+    total_est += (NI / nI) * total_upm_est
+
+print(f"Total estimado (2 etapas): {total_est:.0f}")
+print(f"Total real: {y.sum():.0f}")`,
+    quiz:[
+      {q:"El efecto de diseño (Deff) compara:",opts:["Costo vs precisión","Var complejo vs Var MAS","Dos encuestas diferentes","Media vs mediana"],ans:1,exp:"Deff = Var_complejo / Var_MAS. Mide la eficiencia relativa al MAS."},
+      {q:"En muestreo bietápico, Deff = 1 + (m̄ - 1)ρ. Si ρ = 0:",opts:["Deff > 1","Deff = 1","Deff < 1","Deff = 0"],ans:1,exp:"Si no hay correlación intraclase (ρ=0), Deff = 1, igual que MAS."},
+      {q:"¿Qué son las UPM?",opts:["Unidades de medición","Unidades Primarias de Muestreo","Unidades de población mínima","Usuarios de programas muestrales"],ans:1,exp:"UPM = Unidad Primaria de Muestreo, la unidad seleccionada en la primera etapa."},
+      {q:"El principio de invariancia establece:",opts:["La muestra no cambia","La probabilidad no depende de etapas anteriores","Los estratos son fijos","El tamaño es constante"],ans:1,exp:"La probabilidad de selección en una etapa no depende del diseño de etapas anteriores."},
+      {q:"¿Por qué usar muestreo en dos etapas en vez de conglomerados?",opts:["Es más simple","Reduce costos manteniendo precisión","No requiere marco","Siempre es mejor"],ans:1,exp:"Sub-muestrear dentro de conglomerados reduce costos operativos con una pérdida controlada de precisión."}
+    ]
+  }
+];
+
+// ==================== APP STATE ====================
+let currentTopic = 0;
+let currentTab = 'content';
+let flashcardIdx = {};
+let quizState = {};
+let mindmapScale = {};
+let mindmapPan = {};
+let chartInstances = {};
+
+// ==================== INIT ====================
+function init() {
+  loadTheme();
+  loadProgress();
+  updateProgressUI();
+  openPage('topic0');
+  document.getElementById('globalSearch').addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') { this.value = ''; document.getElementById('searchResults').classList.remove('show'); }
+  });
+  document.addEventListener('click', function(e) {
+    if (!e.target.closest('.search-wrap')) document.getElementById('searchResults').classList.remove('show');
+  });
+}
+
+// ==================== THEME ====================
+function toggleTheme() {
+  document.body.classList.toggle('dark');
+  const isDark = document.body.classList.contains('dark');
+  localStorage.setItem('theme', isDark ? 'dark' : 'light');
+  document.getElementById('themeBtn').innerHTML = isDark ? '<i class="fas fa-sun"></i>' : '<i class="fas fa-moon"></i>';
+  // Redraw charts
+  Object.values(chartInstances).forEach(c => c.destroy());
+  chartInstances = {};
+  if (document.getElementById('page-topic'+currentTopic) && document.getElementById('page-topic'+currentTopic).classList.contains('active')) {
+    renderTopicContent(currentTopic);
+  }
+}
+function loadTheme() {
+  if (localStorage.getItem('theme') === 'dark' || (!localStorage.getItem('theme') && window.matchMedia('(prefers-color-scheme:dark)').matches)) {
+    document.body.classList.add('dark');
+    document.getElementById('themeBtn').innerHTML = '<i class="fas fa-sun"></i>';
+  }
+}
+
+// ==================== SIDEBAR ====================
+function toggleSidebar() {
+  document.getElementById('sidebar').classList.toggle('open');
+}
+
+// ==================== NAVIGATION ====================
+function openPage(pageId) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+
+  let targetId = 'page-' + pageId;
+  let el = document.getElementById(targetId);
+  if (!el) {
+    el = document.createElement('div');
+    el.id = targetId;
+    el.className = 'page';
+    document.getElementById('mainContent').appendChild(el);
+  }
+  el.classList.add('active');
+
+  if (pageId.startsWith('topic')) {
+    const idx = parseInt(pageId.replace('topic',''));
+    currentTopic = idx;
+    document.querySelector(`.nav-item[data-topic="${idx}"]`)?.classList.add('active');
+    renderTopicContent(idx);
+  } else if (pageId === 'glossary') {
+    renderGlossary();
+  } else if (pageId === 'formulas') {
+    renderFormulaSheet();
+  } else if (pageId === 'howto') {
+    renderHowTo();
+  }
+
+  if (window.innerWidth < 900) document.getElementById('sidebar').classList.remove('open');
+  window.scrollTo(0, 0);
+}
+
+// ==================== TOPIC RENDERING ====================
+function renderTopicContent(idx) {
+  const topic = TOPICS[idx];
+  const el = document.getElementById('page-topic'+idx);
+  if (!el) return;
+
+  if (!flashcardIdx[idx]) flashcardIdx[idx] = 0;
+  if (!quizState[idx]) quizState[idx] = {answers:{},submitted:false,score:0};
+  if (!mindmapScale[idx]) mindmapScale[idx] = 1;
+  if (!mindmapPan[idx]) mindmapPan[idx] = {x:0,y:0};
+
+  const tabs = [
+    {id:'content',label:'📖 Contenido'},
+    {id:'mindmap',label:'🗺️ Mapa Mental'},
+    {id:'flashcards',label:'🃏 Flashcards'},
+    {id:'quiz',label:'❓ Quiz'},
+    {id:'rcode',label:'<span class="badge badge-r">R</span> Código'},
+    {id:'pycode',label:'<span class="badge badge-py">Python</span> Código'},
+    {id:'charts',label:'📊 Gráficos'}
+  ];
+
+  let html = `
+    <div style="margin-bottom:24px;">
+      <h1 style="font-size:2rem;font-weight:800;color:${topic.color};">${topic.title}</h1>
+      <p style="color:var(--text2);margin-top:8px;">${topic.summary}</p>
+    </div>
+    <div class="tabs" id="tabs-${idx}">
+      ${tabs.map(t => `<button class="tab${t.id==='content'?' active':''}" onclick="switchTab(${idx},'${t.id}')">${t.label}</button>`).join('')}
+    </div>
+    <div id="tab-content-${idx}"></div>
+  `;
+  el.innerHTML = html;
+  switchTab(idx, 'content');
+}
+
+function switchTab(idx, tabId) {
+  currentTab = tabId;
+  document.querySelectorAll(`#tabs-${idx} .tab`).forEach(t => t.classList.remove('active'));
+  document.querySelector(`#tabs-${idx} .tab[onclick*="${tabId}"]`)?.classList.add('active');
+
+  const container = document.getElementById('tab-content-'+idx);
+  const topic = TOPICS[idx];
+
+  switch(tabId) {
+    case 'content': container.innerHTML = renderContent(topic); break;
+    case 'mindmap': container.innerHTML = renderMindMap(topic, idx); setTimeout(() => initMindMap(idx, topic), 100); break;
+    case 'flashcards': container.innerHTML = renderFlashcards(topic, idx); break;
+    case 'quiz': container.innerHTML = renderQuiz(topic, idx); break;
+    case 'rcode': container.innerHTML = renderCodeBlock(topic.rCode, 'R', topic.title); break;
+    case 'pycode': container.innerHTML = renderCodeBlock(topic.pyCode, 'Python', topic.title); break;
+    case 'charts': container.innerHTML = renderCharts(topic, idx); setTimeout(() => initCharts(idx, topic), 150); break;
+  }
+
+  // Render KaTeX
+  setTimeout(() => {
+    if (typeof renderMathInElement !== 'undefined') {
+      renderMathInElement(container, {delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}]});
+    }
+  }, 50);
+}
+
+function renderContent(topic) {
+  let h = `<div class="card"><h3>📚 Conceptos Clave</h3>`;
+  topic.concepts.forEach(c => {
+    h += `<div style="margin-bottom:12px;padding-bottom:12px;border-bottom:1px solid var(--border);">
+      <h4 style="color:${topic.color};">${c.term}</h4>
+      <p style="color:var(--text2);">${c.def}</p>
+    </div>`;
+  });
+  h += `</div>`;
+
+  if (topic.formulas && topic.formulas.length > 0) {
+    h += `<div class="card"><h3>📐 Fórmulas Clave</h3>`;
+    topic.formulas.forEach(f => {
+      h += `<div class="formula-card"><h4>${f.name}</h4><div class="formula">$$${f.latex}$$</div></div>`;
+    });
+    h += `</div>`;
+  }
+  return h;
+}
+
+// ==================== MIND MAP ====================
+function renderMindMap(topic, idx) {
+  return `
+    <div class="card"><h3>🗺️ Mapa Conceptual: ${topic.title}</h3>
+    <div class="mindmap-container" id="mindmap-${idx}">
+      <svg class="mindmap-svg" id="mindmap-svg-${idx}"></svg>
+      <div class="mindmap-controls">
+        <button onclick="zoomMindMap(${idx}, 0.2)" title="Acercar"><i class="fas fa-plus"></i></button>
+        <button onclick="zoomMindMap(${idx}, -0.2)" title="Alejar"><i class="fas fa-minus"></i></button>
+        <button onclick="resetMindMap(${idx})" title="Restablecer"><i class="fas fa-arrows-to-circle"></i></button>
+      </div>
+    </div></div>`;
+}
+
+function initMindMap(idx, topic) {
+  const svg = document.getElementById('mindmap-svg-'+idx);
+  if (!svg) return;
+  const container = document.getElementById('mindmap-'+idx);
+  const W = container.clientWidth;
+  const H = container.clientHeight;
+
+  svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
+  svg.innerHTML = '';
+
+  // Central node
+  const cx = W/2, cy = H/2;
+  const centralR = 50;
+  addMindMapNode(svg, cx, cy, centralR, topic.title, topic.color, '#fff', true);
+
+  // Arrange concepts in a circle
+  const n = Math.min(topic.concepts.length, 12);
+  const radius = Math.min(W, H) * 0.32;
+  topic.concepts.slice(0, n).forEach((c, i) => {
+    const angle = (2 * Math.PI * i) / n - Math.PI/2;
+    const nx = cx + radius * Math.cos(angle);
+    const ny = cy + radius * Math.sin(angle);
+    const nr = Math.max(18, Math.min(35, c.term.length * 2.5));
+
+    // Line
+    const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+    line.setAttribute('x1', cx); line.setAttribute('y1', cy);
+    line.setAttribute('x2', nx); line.setAttribute('y2', ny);
+    line.setAttribute('stroke', topic.color);
+    line.setAttribute('stroke-width', '2');
+    line.setAttribute('opacity', '0.4');
+    svg.appendChild(line);
+
+    addMindMapNode(svg, nx, ny, nr, c.term, topic.color, '#fff', false, c.def);
+  });
+
+  // Apply transform
+  const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+  while (svg.firstChild) g.appendChild(svg.firstChild);
+  g.setAttribute('transform', `translate(${mindmapPan[idx].x},${mindmapPan[idx].y}) scale(${mindmapScale[idx]})`);
+  svg.appendChild(g);
+
+  // Pan & zoom
+  let isPanning = false, startX, startY;
+  svg.addEventListener('mousedown', e => { isPanning=true; startX=e.clientX-mindmapPan[idx].x; startY=e.clientY-mindmapPan[idx].y; });
+  svg.addEventListener('mousemove', e => {
+    if (!isPanning) return;
+    mindmapPan[idx].x = e.clientX - startX;
+    mindmapPan[idx].y = e.clientY - startY;
+    g.setAttribute('transform', `translate(${mindmapPan[idx].x},${mindmapPan[idx].y}) scale(${mindmapScale[idx]})`);
+  });
+  svg.addEventListener('mouseup', () => isPanning=false);
+  svg.addEventListener('mouseleave', () => isPanning=false);
+  svg.addEventListener('wheel', e => {
+    e.preventDefault();
+    const delta = e.deltaY > 0 ? -0.1 : 0.1;
+    mindmapScale[idx] = Math.max(0.3, Math.min(3, mindmapScale[idx] + delta));
+    g.setAttribute('transform', `translate(${mindmapPan[idx].x},${mindmapPan[idx].y}) scale(${mindmapScale[idx]})`);
+  });
+}
+
+function addMindMapNode(svg, x, y, r, text, color, textColor, isCentral, tooltip) {
+  const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+  g.setAttribute('class', 'mindmap-node');
+  if (tooltip) {
+    const title = document.createElementNS('http://www.w3.org/2000/svg', 'title');
+    title.textContent = tooltip;
+    g.appendChild(title);
+  }
+
+  const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+  circle.setAttribute('cx', x); circle.setAttribute('cy', y); circle.setAttribute('r', r);
+  circle.setAttribute('fill', color);
+  circle.setAttribute('stroke', '#fff');
+  circle.setAttribute('stroke-width', isCentral ? '3' : '1.5');
+  circle.setAttribute('opacity', isCentral ? '1' : '0.85');
+  g.appendChild(circle);
+
+  const t = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+  t.setAttribute('x', x); t.setAttribute('y', y + 4);
+  t.setAttribute('text-anchor', 'middle');
+  t.setAttribute('fill', textColor);
+  t.setAttribute('font-size', isCentral ? '13' : '10');
+  t.setAttribute('font-weight', '600');
+  t.setAttribute('font-family', 'Inter, sans-serif');
+
+  // Word wrap for longer text
+  const words = text.split(' ');
+  if (words.length > 2 && !isCentral) {
+    const mid = Math.ceil(words.length/2);
+    t.setAttribute('y', y - 2);
+    const tspan1 = document.createElementNS('http://www.w3.org/2000/svg', 'tspan');
+    tspan1.setAttribute('x', x); tspan1.setAttribute('dy', '0');
+    tspan1.textContent = words.slice(0,mid).join(' ');
+    t.appendChild(tspan1);
+    const tspan2 = document.createElementNS('http://www.w3.org/2000/svg', 'tspan');
+    tspan2.setAttribute('x', x); tspan2.setAttribute('dy', '12');
+    tspan2.textContent = words.slice(mid).join(' ');
+    t.appendChild(tspan2);
+  } else {
+    t.textContent = text;
+  }
+  g.appendChild(t);
+  svg.appendChild(g);
+}
+
+function zoomMindMap(idx, delta) {
+  mindmapScale[idx] = Math.max(0.3, Math.min(3, mindmapScale[idx] + delta));
+  const svg = document.getElementById('mindmap-svg-'+idx);
+  const g = svg?.querySelector('g');
+  if (g) g.setAttribute('transform', `translate(${mindmapPan[idx].x},${mindmapPan[idx].y}) scale(${mindmapScale[idx]})`);
+}
+function resetMindMap(idx) {
+  mindmapScale[idx] = 1; mindmapPan[idx] = {x:0,y:0};
+  const svg = document.getElementById('mindmap-svg-'+idx);
+  const g = svg?.querySelector('g');
+  if (g) g.setAttribute('transform', 'translate(0,0) scale(1)');
+}
+
+// ==================== FLASHCARDS ====================
+function renderFlashcards(topic, idx) {
+  if (!flashcardIdx[idx]) flashcardIdx[idx] = 0;
+  const cards = topic.concepts.map(c => ({front:c.term, back:c.def}));
+  const ci = flashcardIdx[idx];
+  const card = cards[ci];
+
+  return `
+    <div class="card" style="text-align:center;">
+      <h3>🃏 Flashcards (${ci+1}/${cards.length})</h3>
+      <div class="flashcard-wrap">
+        <div class="flashcard" id="flashcard-${idx}" onclick="flipFlashcard(${idx})">
+          <div class="flashcard-face flashcard-front"><h3>${card.front}</h3><p style="margin-top:8px;opacity:0.8;">Click para revelar</p></div>
+          <div class="flashcard-face flashcard-back"><p>${card.back}</p></div>
+        </div>
+      </div>
+      <div class="flashcard-nav">
+        <button class="btn-prev" onclick="prevFlashcard(${idx})"><i class="fas fa-chevron-left"></i> Anterior</button>
+        <button class="btn-shuffle" onclick="shuffleFlashcards(${idx})"><i class="fas fa-shuffle"></i> Barajar</button>
+        <button class="btn-next" onclick="nextFlashcard(${idx})">Siguiente <i class="fas fa-chevron-right"></i></button>
+      </div>
+    </div>`;
+}
+
+function flipFlashcard(idx) {
+  document.getElementById('flashcard-'+idx).classList.toggle('flipped');
+}
+function nextFlashcard(idx) {
+  const topic = TOPICS[idx];
+  flashcardIdx[idx] = (flashcardIdx[idx] + 1) % topic.concepts.length;
+  document.getElementById('flashcard-'+idx).classList.remove('flipped');
+  switchTab(idx, 'flashcards');
+}
+function prevFlashcard(idx) {
+  const topic = TOPICS[idx];
+  flashcardIdx[idx] = (flashcardIdx[idx] - 1 + topic.concepts.length) % topic.concepts.length;
+  document.getElementById('flashcard-'+idx).classList.remove('flipped');
+  switchTab(idx, 'flashcards');
+}
+function shuffleFlashcards(idx) {
+  flashcardIdx[idx] = Math.floor(Math.random() * TOPICS[idx].concepts.length);
+  document.getElementById('flashcard-'+idx)?.classList.remove('flipped');
+  switchTab(idx, 'flashcards');
+}
+
+// ==================== QUIZ ====================
+function renderQuiz(topic, idx) {
+  if (!quizState[idx]) quizState[idx] = {answers:{},submitted:false,score:0};
+  const qs = quizState[idx];
+  let h = `<div class="card"><h3>❓ Quiz: ${topic.title}</h3>`;
+  topic.quiz.forEach((q, qi) => {
+    h += `<div class="quiz-question"><p>${qi+1}. ${q.q}</p>`;
+    q.opts.forEach((opt, oi) => {
+      let cls = 'quiz-option';
+      if (qs.submitted) {
+        if (oi === q.ans) cls += ' correct';
+        else if (qs.answers[qi] === oi) cls += ' wrong';
+      }
+      const checked = qs.answers[qi] === oi ? 'style="border-color:var(--accent);"' : '';
+      h += `<button class="${cls}" ${checked} onclick="selectAnswer(${idx},${qi},${oi})" ${qs.submitted?'disabled':''}>${String.fromCharCode(65+oi)}. ${opt}</button>`;
+    });
+    if (qs.submitted) {
+      const isCorrect = qs.answers[qi] === q.ans;
+      h += `<div class="quiz-feedback show ${isCorrect?'correct':'wrong'}">${isCorrect?'✅':'❌'} ${q.exp}</div>`;
+    }
+    h += `</div>`;
+  });
+  if (qs.submitted) {
+    h += `<div class="quiz-score">Puntuación: ${qs.score}/${topic.quiz.length} (${Math.round(qs.score/topic.quiz.length*100)}%)</div>`;
+    h += `<button class="tab active" style="margin:0 auto;display:block;" onclick="retryQuiz(${idx})">🔄 Reintentar Quiz</button>`;
+  } else {
+    h += `<button class="tab active" style="margin:0 auto;display:block;" onclick="submitQuiz(${idx})">✅ Enviar Respuestas</button>`;
+  }
+  h += `</div>`;
+  return h;
+}
+
+function selectAnswer(idx, qi, oi) {
+  quizState[idx].answers[qi] = oi;
+  switchTab(idx, 'quiz');
+}
+function submitQuiz(idx) {
+  const topic = TOPICS[idx];
+  const qs = quizState[idx];
+  qs.submitted = true;
+  qs.score = 0;
+  topic.quiz.forEach((q, qi) => {
+    if (qs.answers[qi] === q.ans) qs.score++;
+  });
+  if (qs.score === topic.quiz.length) markTopicComplete(idx);
+  switchTab(idx, 'quiz');
+}
+function retryQuiz(idx) {
+  quizState[idx] = {answers:{},submitted:false,score:0};
+  switchTab(idx, 'quiz');
+}
+
+// ==================== CODE ====================
+function renderCodeBlock(code, lang, title) {
+  return `
+    <div class="card">
+      <h3>💻 Código ${lang}: ${title}</h3>
+      <div class="code-block">
+        <div class="code-header">
+          <span class="lang-tag">${lang}</span>
+          <button class="copy-btn" onclick="copyCode(this)">📋 Copiar</button>
+        </div>
+        <pre><code>${escapeHtml(code)}</code></pre>
+      </div>
+    </div>`;
+}
+
+function copyCode(btn) {
+  const pre = btn.closest('.code-block').querySelector('pre');
+  navigator.clipboard.writeText(pre.textContent).then(() => {
+    btn.textContent = '✓ Copiado!';
+    btn.classList.add('copied');
+    setTimeout(() => { btn.textContent = '📋 Copiar'; btn.classList.remove('copied'); }, 2000);
+  });
+}
+
+// ==================== CHARTS ====================
+function renderCharts(topic, idx) {
+  return `
+    <div class="card"><h3>📊 Visualizaciones Interactivas</h3>
+    <div class="chart-wrap"><canvas id="chart1-${idx}"></canvas></div>
+    <p style="text-align:center;color:var(--text3);margin-top:8px;">Gráfico 1: Distribución muestral</p>
+    </div>
+    <div class="card">
+    <div class="chart-wrap"><canvas id="chart2-${idx}"></canvas></div>
+    <p style="text-align:center;color:var(--text3);margin-top:8px;">Gráfico 2: Comparación de estimadores</p>
+    </div>`;
+}
+
+function initCharts(idx, topic) {
+  // Destroy existing
+  if (chartInstances['chart1-'+idx]) chartInstances['chart1-'+idx].destroy();
+  if (chartInstances['chart2-'+idx]) chartInstances['chart2-'+idx].destroy();
+
+  const isDark = document.body.classList.contains('dark');
+  const gridColor = isDark ? '#334155' : '#e2e8f0';
+  const textColor = isDark ? '#cbd5e1' : '#475569';
+
+  // Chart 1: Sampling distribution simulation
+  const ctx1 = document.getElementById('chart1-'+idx);
+  if (ctx1) {
+    // Simulate sampling distribution of the mean
+    const popMean = 50, popSD = 15;
+    const sampleMeans = [];
+    for (let i = 0; i < 1000; i++) {
+      let sum = 0;
+      for (let j = 0; j < 30; j++) sum += normalRandom(popMean, popSD);
+      sampleMeans.push(sum / 30);
+    }
+    // Histogram bins
+    const bins = 30;
+    const min = Math.min(...sampleMeans), max = Math.max(...sampleMeans);
+    const binWidth = (max - min) / bins;
+    const counts = new Array(bins).fill(0);
+    const labels = [];
+    sampleMeans.forEach(v => {
+      const b = Math.min(bins-1, Math.floor((v - min) / binWidth));
+      counts[b]++;
+    });
+    for (let i = 0; i < bins; i++) labels.push((min + i*binWidth).toFixed(1));
+
+    chartInstances['chart1-'+idx] = new Chart(ctx1, {
+      type: 'bar',
+      data: {
+        labels: labels,
+        datasets: [{
+          label: 'Frecuencia de medias muestrales (n=30)',
+          data: counts,
+          backgroundColor: topic.color + '99',
+          borderColor: topic.color,
+          borderWidth: 1
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          title: { display: true, text: 'Distribución de la Media Muestral (TCL)', color: textColor },
+          legend: { labels: { color: textColor } }
+        },
+        scales: {
+          x: { title: { display: true, text: 'Media muestral', color: textColor }, ticks: { color: textColor, maxTicksLimit: 10 }, grid: { color: gridColor } },
+          y: { title: { display: true, text: 'Frecuencia', color: textColor }, ticks: { color: textColor }, grid: { color: gridColor } }
+        }
+      }
+    });
+  }
+
+  // Chart 2: Comparison
+  const ctx2 = document.getElementById('chart2-'+idx);
+  if (ctx2) {
+    const methods = ['MAS', 'Estratificado', 'Sistemático', 'πPT'];
+    const cve = [3.5, 2.4, 1.8, 1.5];
+    const deff = [1.0, 0.7, 0.6, 0.3];
+    chartInstances['chart2-'+idx] = new Chart(ctx2, {
+      type: 'bar',
+      data: {
+        labels: methods,
+        datasets: [
+          { label: 'CVE (%)', data: cve, backgroundColor: topic.color + '99', borderColor: topic.color, borderWidth: 1, yAxisID: 'y' },
+          { label: 'Deff', data: deff, backgroundColor: '#f59e0b99', borderColor: '#f59e0b', borderWidth: 1, yAxisID: 'y1' }
+        ]
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          title: { display: true, text: 'Comparación de Eficiencia entre Diseños', color: textColor },
+          legend: { labels: { color: textColor } }
+        },
+        scales: {
+          x: { ticks: { color: textColor }, grid: { color: gridColor } },
+          y: { title: { display: true, text: 'CVE (%)', color: textColor }, ticks: { color: textColor }, grid: { color: gridColor }, position: 'left' },
+          y1: { title: { display: true, text: 'Deff', color: '#f59e0b' }, ticks: { color: '#f59e0b' }, grid: { display: false }, position: 'right' }
+        }
+      }
+    });
+  }
+}
+
+function normalRandom(mean, sd) {
+  let u = 0, v = 0;
+  while (u === 0) u = Math.random();
+  while (v === 0) v = Math.random();
+  return mean + sd * Math.sqrt(-2.0 * Math.log(u)) * Math.cos(2.0 * Math.PI * v);
+}
+
+// ==================== GLOSSARY ====================
+function renderGlossary() {
+  const allTerms = [];
+  TOPICS.forEach(t => {
+    t.concepts.forEach(c => {
+      allTerms.push({...c, topic:t.title, color:t.color});
+    });
+  });
+
+  let h = `<h1 style="font-size:2rem;font-weight:800;margin-bottom:20px;">📚 Glosario de Términos</h1>
+  <div class="glossary-filter">
+    <input type="text" id="glossarySearch" placeholder="🔍 Filtrar términos..." oninput="filterGlossary()">
+  </div>
+  <div id="glossaryList">`;
+
+  allTerms.forEach((t, i) => {
+    h += `<div class="glossary-term" data-search="${t.term.toLowerCase()} ${t.def.toLowerCase()}">
+      <h4>${t.term} <span class="term-topic" style="color:${t.color};">— ${t.topic}</span></h4>
+      <p style="color:var(--text2);">${t.def}</p>
+    </div>`;
+  });
+
+  h += `</div>`;
+  document.getElementById('page-glossary').innerHTML = h;
+}
+
+function filterGlossary() {
+  const q = document.getElementById('glossarySearch')?.value.toLowerCase() || '';
+  document.querySelectorAll('#glossaryList .glossary-term').forEach(el => {
+    el.style.display = el.dataset.search.includes(q) ? '' : 'none';
+  });
+}
+
+// ==================== FORMULA SHEET ====================
+function renderFormulaSheet() {
+  let h = `<h1 style="font-size:2rem;font-weight:800;margin-bottom:20px;">📐 Hoja de Fórmulas</h1>`;
+  TOPICS.forEach(t => {
+    if (t.formulas && t.formulas.length > 0) {
+      h += `<div class="card"><h3 style="color:${t.color};">${t.title}</h3>`;
+      t.formulas.forEach(f => {
+        h += `<div class="formula-card"><h4>${f.name}</h4><div class="formula">$$${f.latex}$$</div></div>`;
+      });
+      h += `</div>`;
+    }
+  });
+  document.getElementById('page-formulas').innerHTML = h;
+  setTimeout(() => {
+    if (typeof renderMathInElement !== 'undefined') {
+      renderMathInElement(document.getElementById('page-formulas'), {delimiters:[{left:'$$',right:'$$',display:true}]});
+    }
+  }, 100);
+}
+
+// ==================== HOW TO ====================
+function renderHowTo() {
+  document.getElementById('page-howto').innerHTML = `
+    <h1 style="font-size:2rem;font-weight:800;margin-bottom:20px;">🚀 Guía: Cómo Ejecutar el Código</h1>
+    <div class="card">
+      <h3>🐍 Python</h3>
+      <div class="howto-step"><div class="step-num">1</div><div class="step-content"><h4>Instalar Python</h4><p>Descarga Python desde <a href="https://python.org" target="_blank" style="color:var(--accent);">python.org</a>. Asegúrate de marcar "Add Python to PATH" durante la instalación.</p></div></div>
+      <div class="howto-step"><div class="step-num">2</div><div class="step-content"><h4>Instalar paquetes necesarios</h4><div class="code-block"><pre><code>pip install numpy pandas scipy matplotlib</code></pre></div></div></div>
+      <div class="howto-step"><div class="step-num">3</div><div class="step-content"><h4>Ejecutar código</h4><p>Guarda el código en un archivo <code>.py</code> y ejecuta: <code>python archivo.py</code>. También puedes usar <strong>Jupyter Notebook</strong> o <strong>Google Colab</strong> (colab.research.google.com) para una experiencia interactiva.</p></div></div>
+    </div>
+    <div class="card">
+      <h3>📊 R</h3>
+      <div class="howto-step"><div class="step-num">1</div><div class="step-content"><h4>Instalar R</h4><p>Descarga R desde <a href="https://cran.r-project.org" target="_blank" style="color:var(--accent);">cran.r-project.org</a>. Se recomienda usar <strong>RStudio</strong> como IDE (rstudio.com).</p></div></div>
+      <div class="howto-step"><div class="step-num">2</div><div class="step-content"><h4>Instalar paquetes</h4><div class="code-block"><pre><code>install.packages(c("TeachingSampling", "dplyr", "survey", "samplesize4surveys", "stratification"))</code></pre></div></div></div>
+      <div class="howto-step"><div class="step-num">3</div><div class="step-content"><h4>Ejecutar código</h4><p>Abre RStudio, crea un nuevo script, pega el código y ejecuta con <kbd>Ctrl+Enter</kbd> (o <kbd>Cmd+Enter</kbd> en Mac).</p></div></div>
+    </div>
+    <div class="card">
+      <h3>☁️ Google Colab (Python)</h3>
+      <p>Ve a <a href="https://colab.research.google.com" target="_blank" style="color:var(--accent);">colab.research.google.com</a>, crea un nuevo notebook, pega el código Python y ejecuta cada celda con <kbd>Shift+Enter</kbd>. No requiere instalación.</p>
+    </div>`;
+}
+
+// ==================== PROGRESS ====================
+function markTopicComplete(idx) {
+  let completed = JSON.parse(localStorage.getItem('completedTopics') || '[]');
+  if (!completed.includes(idx)) completed.push(idx);
+  localStorage.setItem('completedTopics', JSON.stringify(completed));
+  updateProgressUI();
+  showToast(`✅ ¡Tema ${idx+1} completado!`);
+}
+
+function loadProgress() {
+  return JSON.parse(localStorage.getItem('completedTopics') || '[]');
+}
+
+function updateProgressUI() {
+  const completed = loadProgress();
+  const total = TOPICS.length;
+  const pct = Math.round((completed.length / total) * 100);
+  document.getElementById('globalProgress').style.width = pct + '%';
+  document.getElementById('progressText').textContent = `${completed.length}/${total}`;
+  TOPICS.forEach((t, i) => {
+    const check = document.getElementById('check'+i);
+    if (check) {
+      if (completed.includes(i)) check.classList.add('done');
+      else check.classList.remove('done');
+    }
+  });
+}
+
+// ==================== SEARCH ====================
+function handleGlobalSearch(query) {
+  const results = document.getElementById('searchResults');
+  if (query.length < 2) { results.classList.remove('show'); return; }
+
+  const q = query.toLowerCase();
+  const matches = [];
+
+  TOPICS.forEach(t => {
+    if (t.title.toLowerCase().includes(q)) matches.push({title:t.title, desc:'Tema', action:()=>openPage('topic'+t.id)});
+    t.concepts.forEach(c => {
+      if (c.term.toLowerCase().includes(q) || c.def.toLowerCase().includes(q))
+        matches.push({title:c.term, desc:t.title, action:()=>{openPage('topic'+t.id);setTimeout(()=>switchTab(t.id,'content'),200);}});
+    });
+    t.formulas?.forEach(f => {
+      if (f.name.toLowerCase().includes(q))
+        matches.push({title:f.name, desc:'Fórmula - '+t.title, action:()=>openPage('formulas')});
+    });
+  });
+
+  // Also search glossary
+  if (q.includes('glosario') || q.includes('término')) {
+    matches.push({title:'Glosario', desc:'Todos los términos', action:()=>openPage('glossary')});
+  }
+  if (q.includes('fórmula')) {
+    matches.push({title:'Hoja de Fórmulas', desc:'Todas las fórmulas', action:()=>openPage('formulas')});
+  }
+  if (q.includes('guía') || q.includes('ejecutar') || q.includes('código')) {
+    matches.push({title:'Guía de Ejecución', desc:'Cómo ejecutar R y Python', action:()=>openPage('howto')});
+  }
+
+  const unique = [];
+  const seen = new Set();
+  matches.forEach(m => {
+    const key = m.title + m.desc;
+    if (!seen.has(key)) { seen.add(key); unique.push(m); }
+  });
+
+  if (unique.length === 0) {
+    results.innerHTML = '<div class="sr-item"><span style="color:var(--text3);">Sin resultados</span></div>';
+  } else {
+    results.innerHTML = unique.slice(0, 10).map(m =>
+      `<div class="sr-item" onclick="document.getElementById('searchResults').classList.remove('show');document.getElementById('globalSearch').value='';(${m.action.toString()})()">
+        <div class="sr-title">${m.title}</div><div class="sr-desc">${m.desc}</div>
+      </div>`
+    ).join('');
+  }
+  results.classList.add('show');
+}
+
+// ==================== UTILS ====================
+function escapeHtml(str) {
+  const div = document.createElement('div');
+  div.textContent = str;
+  return div.innerHTML;
+}
+
+function showToast(msg) {
+  const toast = document.createElement('div');
+  toast.className = 'toast';
+  toast.textContent = msg;
+  document.body.appendChild(toast);
+  setTimeout(() => toast.remove(), 3000);
+}
+
+// ==================== START ====================
+document.addEventListener('DOMContentLoaded', init);
+</script>
+</body>
+</html>
